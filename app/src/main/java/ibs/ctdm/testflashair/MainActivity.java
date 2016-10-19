@@ -17,6 +17,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.List;
 
@@ -111,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
             Glide.with(getContext())
                     .load(url)
                     .error(android.R.drawable.sym_def_app_icon)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(imageView);
 
             return convertView;
