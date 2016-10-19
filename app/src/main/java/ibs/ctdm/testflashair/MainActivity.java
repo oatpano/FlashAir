@@ -6,9 +6,13 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -81,8 +85,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class FileListAdapter extends ArrayAdapter<FlashAirFileInfo> {
+        LayoutInflater mInflater;
         public FileListAdapter(Context context, List<FlashAirFileInfo> data) {
-            super(context, android.R.layout.simple_list_item_1, data);
+            super(context, 0, data);
+            mInflater = LayoutInflater.from(context);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            if (convertView == null) {
+                convertView = mInflater.inflate(R.layout.view_item, parent, false);
+            }
+            FlashAirFileInfo item = getItem(position);
+            TextView tv = (TextView) convertView.findViewById(R.id.tvTitle);
+            tv.setText(item.mFileName);
+            ImageView imageView = (ImageView) convertView
+                    .findViewById(R.id.ivThumbnail);
+            /*if (item.mFileName.endsWith(".jpg") ||
+                    item.mFileName.endsWith(".jpeg")) {
+                imageView.setImageUrl(
+                        FlashAirUtils.getThumbnailUrl(item.mDir, item.mFileName),
+                        mImageLoader);
+            } else {
+                imageView.setImageUrl(null, mImageLoader);
+            }*/
+            return convertView;
         }
     }
 }
