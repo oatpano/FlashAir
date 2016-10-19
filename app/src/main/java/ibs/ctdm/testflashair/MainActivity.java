@@ -16,6 +16,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+
 import java.util.List;
 
 import ibs.ctdm.flashair.FlashAirFileInfo;
@@ -96,19 +98,21 @@ public class MainActivity extends AppCompatActivity {
             if (convertView == null) {
                 convertView = mInflater.inflate(R.layout.view_item, parent, false);
             }
+
+            TextView textView = (TextView) convertView.findViewById(R.id.tvTitle);
+            ImageView imageView = (ImageView) convertView.findViewById(R.id.ivThumbnail);
+
             FlashAirFileInfo item = getItem(position);
-            TextView tv = (TextView) convertView.findViewById(R.id.tvTitle);
-            tv.setText(item.mFileName);
-            ImageView imageView = (ImageView) convertView
-                    .findViewById(R.id.ivThumbnail);
-            /*if (item.mFileName.endsWith(".jpg") ||
-                    item.mFileName.endsWith(".jpeg")) {
-                imageView.setImageUrl(
-                        FlashAirUtils.getThumbnailUrl(item.mDir, item.mFileName),
-                        mImageLoader);
-            } else {
-                imageView.setImageUrl(null, mImageLoader);
-            }*/
+
+            textView.setText(item.mFileName);
+
+            String url = FlashAirUtils.getThumbnailUrl(item.mDir, item.mFileName);
+
+            Glide.with(getContext())
+                    .load(url)
+                    .error(android.R.drawable.sym_def_app_icon)
+                    .into(imageView);
+
             return convertView;
         }
     }
