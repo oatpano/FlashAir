@@ -21,3 +21,10 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+ext {
+    supportLibraryVersion = '24.2.1'
+    retrofitVersion = '2.1.0'
+    okhttpVersion = '3.4.1'
+    permissionsdispatcherVersion = '2.1.3'
+}
