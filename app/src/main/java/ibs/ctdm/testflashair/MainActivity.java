@@ -4,8 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,14 +33,24 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvCount;
     private ListView listView;
 
-    FileListAdapter fileListAdapter;
+    private FileListAdapter fileListAdapter;
+    private String imageDir = "/DCIM/100__TSB";
+    private Handler updateHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("MainActivity", "onCreate");
         setContentView(R.layout.activity_main);
         initView();
         initAutoUpdate();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d("MainActivity", "onDestroy");
+        stopUpdate();
     }
 
     @Override
@@ -54,9 +66,8 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             return true;
         } else if (item.getItemId() == R.id.action_reload) {
-            String dir = "/DCIM/100__TSB";
-            getFileCount(dir);
-            getFileList(dir);
+            getFileCount(imageDir);
+            getFileList(imageDir);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -71,21 +82,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initAutoUpdate() {
-        new AsyncTask<Void, Void, Boolean>(){
-
-            @Override
-            protected Boolean doInBackground(Void... params) {
-                return FlashAirUtils.hasUpdate();
-            }
-
-            @Override
-            protected void onPostExecute(Boolean result) {
-                super.onPostExecute(result);
-                if (result){
-
-                }
-            }
-        }.execute();
+        getFileCount(imageDir);
+        getFileList(imageDir);
+        updateHandler = new Handler();
+        startUpdate();
     }
 
     private void getFileCount(final String dir) {
@@ -119,6 +119,40 @@ public class MainActivity extends AppCompatActivity {
                 fileListAdapter.notifyDataSetChanged();
             }
         }.execute();
+    }
+
+    public Runnable statusChecker = new Runnable() {
+        @Override
+        public void run() {
+            Log.d("MainActivity", "statusChecker");
+            new AsyncTask<Void, Void, Boolean>(){
+
+                @Override
+                protected Boolean doInBackground(Void... params) {
+                    return FlashAirUtils.hasUpdate();
+                }
+
+                @Override
+                protected void onPostExecute(Boolean result) {
+                    super.onPostExecute(result);
+                    if (result){
+                        getFileCount(imageDir);
+                        getFileList(imageDir);
+                    }
+                }
+            }.execute();
+            updateHandler.postDelayed(statusChecker, 4000);
+        }
+    };
+
+
+    public void startUpdate() {
+        statusChecker.run();
+    }
+
+
+    public void stopUpdate() {
+        updateHandler.removeCallbacks(statusChecker);
     }
 
     private class FileListAdapter extends ArrayAdapter<FlashAirFileInfo> {
