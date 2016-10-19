@@ -19,17 +19,26 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ibs.ctdm.flashair.FlashAirFileInfo;
 import ibs.ctdm.flashair.FlashAirUtils;
+
 //dev
 public class MainActivity extends AppCompatActivity {
+
+    private TextView tvCount;
+    private ListView listView;
+
+    FileListAdapter fileListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        initView();
+        initAutoUpdate();
     }
 
     @Override
@@ -53,6 +62,32 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void initView() {
+        tvCount = (TextView) findViewById(R.id.tvCount);
+        listView = (ListView) findViewById(R.id.listView);
+
+        fileListAdapter = new FileListAdapter(this, new ArrayList<FlashAirFileInfo>());
+        listView.setAdapter(fileListAdapter);
+    }
+
+    private void initAutoUpdate() {
+        new AsyncTask<Void, Void, Boolean>(){
+
+            @Override
+            protected Boolean doInBackground(Void... params) {
+                return FlashAirUtils.hasUpdate();
+            }
+
+            @Override
+            protected void onPostExecute(Boolean result) {
+                super.onPostExecute(result);
+                if (result){
+
+                }
+            }
+        }.execute();
+    }
+
     private void getFileCount(final String dir) {
         new AsyncTask<Void, Void, Integer>(){
 
@@ -64,8 +99,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected void onPostExecute(Integer result) {
                 super.onPostExecute(result);
-                TextView textView = (TextView) findViewById(R.id.textView);
-                textView.setText(getString(R.string.image_count_format, result));
+                tvCount.setText(getString(R.string.image_count_format, result));
             }
         }.execute();
     }
@@ -81,17 +115,27 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected void onPostExecute(List<FlashAirFileInfo> result) {
                 super.onPostExecute(result);
-                ListView listView = (ListView) findViewById(R.id.listView);
-                listView.setAdapter(new FileListAdapter(MainActivity.this, result));
+                fileListAdapter.setImageResults(result);
+                fileListAdapter.notifyDataSetChanged();
             }
         }.execute();
     }
 
     private class FileListAdapter extends ArrayAdapter<FlashAirFileInfo> {
         LayoutInflater mInflater;
+        private List<FlashAirFileInfo> imageResults;
+
         public FileListAdapter(Context context, List<FlashAirFileInfo> data) {
             super(context, 0, data);
             mInflater = LayoutInflater.from(context);
+        }
+
+        @Override
+        public int getCount() {
+            if (imageResults == null){
+                return 0;
+            }
+            return imageResults.size();
         }
 
         @Override
@@ -103,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
             TextView textView = (TextView) convertView.findViewById(R.id.tvTitle);
             ImageView imageView = (ImageView) convertView.findViewById(R.id.ivThumbnail);
 
-            FlashAirFileInfo item = getItem(position);
+            FlashAirFileInfo item = imageResults.get(position);
 
             textView.setText(item.mFileName);
 
@@ -117,5 +161,10 @@ public class MainActivity extends AppCompatActivity {
 
             return convertView;
         }
+
+        public void setImageResults(List<FlashAirFileInfo> imageResults){
+            this.imageResults = imageResults;
+        }
     }
+
 }
