@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Test FlashAir</string>
+    <string name="image_count_format">%1$d images</string>
+</resources>
