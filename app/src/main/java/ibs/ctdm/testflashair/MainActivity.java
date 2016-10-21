@@ -116,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
                 super.onPostExecute(result);
                 fileListAdapter.setImageResults(result);
                 fileListAdapter.notifyDataSetChanged();
+                listView.smoothScrollToPosition(result.size() - 1);
             }
         }.execute();
     }
